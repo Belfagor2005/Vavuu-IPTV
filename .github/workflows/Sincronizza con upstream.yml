@@ -1,0 +1,31 @@
+name: Sincronizza con upstream
+
+on:
+  schedule:
+    # Esegue ogni giorno alle 02:00 UTC (modifica l'orario a piacere)
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout del fork
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0          # Recupera tutta la cronologia dei commit
+          token: ${{ secrets.GITHUB_TOKEN }}  # Token automatico (ha accesso in scrittura)
+
+      - name: Configura upstream
+        run: |
+          git remote add upstream https://github.com/nookjoook56-web/Vavuu-IPTV.git
+          git fetch upstream
+
+      - name: Unisci i cambiamenti da upstream
+        run: |
+          git checkout main  # Assicurati che il branch predefinito sia "main", altrimenti modificalo
+          git merge upstream/main --ff-only --no-edit || echo "Nessun aggiornamento o conflitto rilevato"
+
+      - name: Push delle modifiche
+        run: |
+          git push origin main
